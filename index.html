@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glamour Studio — Luxury Salon Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8a0b0;
+    --deep-rose: #c4637a;
+    --gold: #d4a853;
+    --cream: #fdf6f0;
+    --dark: #1a1018;
+    --mid: #2d1f28;
+    --glass: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.15);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--dark); color: var(--cream); font-family: 'Montserrat', sans-serif; overflow-x: hidden; cursor: none; }
+  .cursor { position: fixed; width: 12px; height: 12px; background: var(--rose); border-radius: 50%; pointer-events: none; z-index: 99999; transition: transform 0.1s ease; mix-blend-mode: screen; }
+  .cursor-follower { position: fixed; width: 40px; height: 40px; border: 1px solid var(--rose); border-radius: 50%; pointer-events: none; z-index: 99998; transition: all 0.15s ease; opacity: 0.5; }
+  #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; }
+  nav { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 24px 60px; display: flex; justify-content: space-between; align-items: center; transition: all 0.4s ease; }
+  nav.scrolled { background: rgba(26,16,24,0.92); backdrop-filter: blur(20px); padding: 16px 60px; border-bottom: 1px solid var(--glass-border); }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; letter-spacing: 4px; color: var(--cream); text-decoration: none; }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a { color: rgba(253,246,240,0.7); text-decoration: none; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; transition: color 0.3s; font-weight: 400; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 28px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; cursor: none; transition: all 0.3s ease; }
+  .nav-cta:hover { background: var(--gold); color: var(--dark); }
+  #hero { position: relative; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; z-index: 1; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(196,99,122,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 20%, rgba(212,168,83,0.1) 0%, transparent 50%), linear-gradient(180deg, #1a1018 0%, #2d1f28 50%, #1a1018 100%); }
+  .hero-3d-scene { position: absolute; inset: 0; perspective: 1000px; }
+  .floating-orb { position: absolute; border-radius: 50%; filter: blur(60px); animation: floatOrb 8s ease-in-out infinite; }
+  .orb1 { width: 400px; height: 400px; background: rgba(196,99,122,0.2); top: 10%; left: 5%; animation-delay: 0s; }
+  .orb2 { width: 300px; height: 300px; background: rgba(212,168,83,0.15); top: 50%; right: 10%; animation-delay: -3s; }
+  .orb3 { width: 200px; height: 200px; background: rgba(232,160,176,0.25); bottom: 20%; left: 40%; animation-delay: -5s; }
+  @keyframes floatOrb { 0%, 100% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
+  .hero-content { position: relative; z-index: 2; text-align: center; max-width: 900px; padding: 0 20px; }
+  .hero-eyebrow { font-size: 0.65rem; letter-spacing: 6px; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; opacity: 0; animation: fadeUp 1s ease 0.3s forwards; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 300; line-height: 1.05; letter-spacing: 2px; margin-bottom: 32px; opacity: 0; animation: fadeUp 1s ease 0.6s forwards; }
+  .hero-title em { font-style: italic; color: var(--rose); }
+  .hero-title .gold-line { display: block; color: var(--gold); font-size: 0.6em; letter-spacing: 8px; font-style: normal; font-weight: 300; margin-top: 8px; }
+  .hero-sub { font-size: 0.8rem; letter-spacing: 2px; color: rgba(253,246,240,0.5); max-width: 500px; margin: 0 auto 48px; line-height: 2; opacity: 0; animation: fadeUp 1s ease 0.9s forwards; }
+  .hero-buttons { display: flex; gap: 20px; justify-content: center; opacity: 0; animation: fadeUp 1s ease 1.2s forwards; }
+  .btn-primary { background: linear-gradient(135deg, var(--deep-rose), var(--rose)); color: white; border: none; padding: 16px 48px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; cursor: none; transition: all 0.4s ease; position: relative; overflow: hidden; }
+  .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--gold), var(--deep-rose)); opacity: 0; transition: opacity 0.4s; }
+  .btn-primary:hover::before { opacity: 1; }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-secondary { background: transparent; color: var(--cream); border: 1px solid rgba(253,246,240,0.3); padding: 16px 48px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; cursor: none; transition: all 0.4s ease; }
+  .btn-secondary:hover { border-color: var(--rose); color: var(--rose); }
+  .hero-scroll { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: fadeUp 1s ease 1.8s forwards; }
+  .scroll-line { width: 1px; height: 60px; background: linear-gradient(to bottom, var(--gold), transparent); animation: scrollPulse 2s ease-in-out infinite; }
+  .scroll-text { font-size: 0.55rem; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; }
+  @keyframes scrollPulse { 0%, 100% { opacity: 0.4; transform: scaleY(1); } 50% { opacity: 1; transform: scaleY(1.2); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-3d-object { position: absolute; right: 8%; top: 50%; transform: translateY(-50%); width: 300px; height: 300px; opacity: 0; animation: fadeUp 1s ease 1s forwards; }
+  .marquee-section { position: relative; z-index: 2; border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); padding: 20px 0; overflow: hidden; background: rgba(212,168,83,0.05); }
+  .marquee-track { display: flex; gap: 80px; animation: marquee 20s linear infinite; white-space: nowrap; }
+  .marquee-item { font-size: 0.6rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); flex-shrink: 0; }
+  .marquee-dot { color: var(--rose); margin-right: 80px; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  section { position: relative; z-index: 1; }
+  .section-label { font-size: 0.6rem; letter-spacing: 5px; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 300; line-height: 1.1; }
+  .section-title em { font-style: italic; color: var(--rose); }
+  #about { padding: 140px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; background: linear-gradient(135deg, rgba(45,31,40,0.5), transparent); }
+  .about-visual { position: relative; height: 600px; }
+  .about-card { position: absolute; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); transition: transform 0.6s ease; }
+  .about-card:hover { transform: translateY(-10px) rotate(-1deg); }
+  .card-main { width: 75%; height: 75%; top: 0; left: 0; padding: 0; }
+  .card-main-img { position: absolute; inset: 0; overflow: hidden; }
+  .card-main-img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform 0.8s ease; filter: brightness(0.85) saturate(1.1); }
+  .card-main:hover .card-main-img img { transform: scale(1.05); }
+  .card-main-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,16,24,0.7) 0%, transparent 60%); z-index: 1; }
+  .card-stat { width: 45%; height: 40%; bottom: 0; right: 0; background: linear-gradient(135deg, rgba(212,168,83,0.2), rgba(196,99,122,0.1)); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; }
+  .stat-number { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; font-weight: 300; color: var(--gold); line-height: 1; }
+  .stat-label { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: rgba(253,246,240,0.6); margin-top: 8px; }
+  .about-content { padding: 20px 0; }
+  .about-content p { font-size: 0.85rem; line-height: 2; color: rgba(253,246,240,0.65); margin: 32px 0; font-weight: 300; }
+  .stats-row { display: flex; gap: 48px; margin-top: 48px; padding-top: 48px; border-top: 1px solid var(--glass-border); }
+  .stat-item { text-align: center; }
+  .stat-item .num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--rose); font-weight: 300; }
+  .stat-item .lbl { font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(253,246,240,0.5); margin-top: 4px; }
+  #services { padding: 140px 60px; background: linear-gradient(180deg, transparent, rgba(45,31,40,0.4), transparent); }
+  .services-header { text-align: center; margin-bottom: 80px; }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--glass-border); }
+  .service-card { background: var(--dark); padding: 52px 40px; position: relative; overflow: hidden; cursor: none; transition: all 0.5s ease; }
+  .service-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(196,99,122,0.08), rgba(212,168,83,0.05)); opacity: 0; transition: opacity 0.5s; }
+  .service-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, var(--rose), var(--gold)); transition: width 0.5s ease; }
+  .service-card:hover::before { opacity: 1; }
+  .service-card:hover::after { width: 100%; }
+  .service-card:hover { transform: translateY(-4px); }
+  .service-number { font-family: 'Cormorant Garamond', serif; font-size: 4rem; font-weight: 300; color: rgba(212,168,83,0.15); line-height: 1; margin-bottom: 24px; transition: color 0.4s; }
+  .service-card:hover .service-number { color: rgba(212,168,83,0.4); }
+  .service-name { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 400; margin-bottom: 12px; color: var(--cream); }
+  .service-desc { font-size: 0.75rem; line-height: 1.8; color: rgba(253,246,240,0.5); margin-bottom: 32px; font-weight: 300; }
+  .service-footer { display: flex; justify-content: space-between; align-items: center; }
+  .service-price { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); }
+  .service-btn { background: transparent; border: 1px solid rgba(232,160,176,0.3); color: var(--rose); padding: 8px 20px; font-family: 'Montserrat', sans-serif; font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; cursor: none; transition: all 0.3s; }
+  .service-btn:hover { background: var(--rose); color: var(--dark); border-color: var(--rose); }
+  #testimonials { padding: 140px 60px; overflow: hidden; }
+  .testimonials-header { text-align: center; margin-bottom: 80px; }
+  .testimonials-track-wrap { overflow: hidden; position: relative; }
+  .testimonials-track-wrap::before, .testimonials-track-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 200px; z-index: 2; }
+  .testimonials-track-wrap::before { left: 0; background: linear-gradient(to right, var(--dark), transparent); }
+  .testimonials-track-wrap::after { right: 0; background: linear-gradient(to left, var(--dark), transparent); }
+  .testimonials-track { display: flex; gap: 32px; animation: slideTestimonials 30s linear infinite; }
+  @keyframes slideTestimonials { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .testimonial-card { flex-shrink: 0; width: 400px; background: var(--glass); border: 1px solid var(--glass-border); padding: 48px; position: relative; backdrop-filter: blur(10px); }
+  .testimonial-quote { font-family: 'Cormorant Garamond', serif; font-size: 4rem; color: var(--rose); line-height: 0.5; margin-bottom: 24px; opacity: 0.4; }
+  .testimonial-text { font-size: 0.82rem; line-height: 1.9; color: rgba(253,246,240,0.7); font-style: italic; font-weight: 300; margin-bottom: 32px; }
+  .testimonial-author { display: flex; align-items: center; gap: 16px; }
+  .author-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--rose), var(--gold)); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--dark); font-weight: 600; }
+  .author-name { font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--cream); font-weight: 500; }
+  .author-role { font-size: 0.65rem; color: var(--gold); margin-top: 2px; letter-spacing: 1px; }
+  .stars { color: var(--gold); font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 16px; }
+  #booking { padding: 140px 60px; background: linear-gradient(135deg, rgba(45,31,40,0.6), rgba(26,16,24,0.8)); }
+  .booking-container { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .booking-info { padding-top: 20px; }
+  .booking-info p { font-size: 0.82rem; line-height: 2; color: rgba(253,246,240,0.6); margin: 32px 0; font-weight: 300; }
+  .contact-details { margin-top: 48px; }
+  .contact-item { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--glass-border); }
+  .contact-icon { width: 40px; height: 40px; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; color: var(--gold); }
+  .contact-label { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  .contact-value { font-size: 0.82rem; color: rgba(253,246,240,0.7); font-weight: 300; }
+  .booking-form { background: var(--glass); border: 1px solid var(--glass-border); padding: 52px; backdrop-filter: blur(20px); }
+  .form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; margin-bottom: 40px; color: var(--cream); }
+  .form-group { margin-bottom: 28px; position: relative; }
+  .form-group label { display: block; font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-bottom: 1px solid rgba(212,168,83,0.3); color: var(--cream); padding: 14px 16px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 300; outline: none; transition: all 0.3s ease; cursor: none; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--rose); background: rgba(232,160,176,0.05); }
+  .form-group select option { background: var(--mid); }
+  .form-group textarea { resize: none; height: 100px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .submit-btn { width: 100%; background: linear-gradient(135deg, var(--deep-rose), var(--rose)); color: white; border: none; padding: 18px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; cursor: none; transition: all 0.4s ease; margin-top: 8px; position: relative; overflow: hidden; }
+  .submit-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--gold), var(--deep-rose)); opacity: 0; transition: opacity 0.4s; }
+  .submit-btn:hover::before { opacity: 1; }
+  .submit-btn span { position: relative; z-index: 1; }
+  #rationale { padding: 100px 60px; border-top: 1px solid var(--glass-border); background: rgba(212,168,83,0.03); }
+  .rationale-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; margin-top: 60px; }
+  .rationale-item { border-left: 2px solid var(--rose); padding-left: 24px; }
+  .rationale-item h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400; color: var(--gold); margin-bottom: 12px; }
+  .rationale-item p { font-size: 0.75rem; line-height: 1.8; color: rgba(253,246,240,0.55); font-weight: 300; }
+  footer { padding: 60px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 300; letter-spacing: 4px; }
+  .footer-logo span { color: var(--gold); }
+  .footer-copy { font-size: 0.65rem; letter-spacing: 2px; color: rgba(253,246,240,0.3); }
+  .footer-social { display: flex; gap: 20px; }
+  .social-link { width: 36px; height: 36px; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; color: rgba(253,246,240,0.5); text-decoration: none; font-size: 0.8rem; transition: all 0.3s; cursor: none; }
+  .social-link:hover { border-color: var(--rose); color: var(--rose); }
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .tilt-card { transform-style: preserve-3d; transition: transform 0.1s ease; }
+  .success-msg { display: none; text-align: center; padding: 20px; color: var(--gold); font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; border: 1px solid var(--gold); margin-top: 16px; }
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; } nav.scrolled { padding: 14px 24px; } .nav-links { display: none; }
+    #about { grid-template-columns: 1fr; padding: 80px 24px; gap: 60px; } .about-visual { height: 300px; }
+    #services { padding: 80px 24px; } .services-grid { grid-template-columns: 1fr; }
+    #testimonials { padding: 80px 24px; }
+    .booking-container { grid-template-columns: 1fr; padding: 0; gap: 48px; } #booking { padding: 80px 24px; }
+    .booking-form { padding: 32px 24px; } .form-row { grid-template-columns: 1fr; }
+    #rationale { padding: 80px 24px; } .rationale-grid { grid-template-columns: 1fr 1fr; }
+    footer { flex-direction: column; gap: 24px; text-align: center; padding: 40px 24px; }
+    .hero-3d-object { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursor-follower"></div>
+<canvas id="particle-canvas"></canvas>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">Glamour <span>Studio</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#booking">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-3d-scene">
+    <div class="floating-orb orb1"></div>
+    <div class="floating-orb orb2"></div>
+    <div class="floating-orb orb3"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">✦ Luxury Salon Experience ✦ Kolkata, West Bengal</p>
+    <h1 class="hero-title">
+      Where Beauty<br>
+      Meets <em>Artistry</em>
+      <span class="gold-line">Est. 2018 — Glamour Studio</span>
+    </h1>
+    <p class="hero-sub">Premium hair, skin, and wellness treatments crafted for the modern woman. Step into a world where every detail is designed for you.</p>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})"><span>Book an Appointment</span></button>
+      <button class="btn-secondary" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Explore Services</button>
+    </div>
+  </div>
+  <div class="hero-3d-object">
+    <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;animation:floatOrb 6s ease-in-out infinite">
+      <defs>
+        <radialGradient id="g1" cx="40%" cy="40%"><stop offset="0%" stop-color="#e8a0b0" stop-opacity="0.9"/><stop offset="100%" stop-color="#c4637a" stop-opacity="0.3"/></radialGradient>
+        <radialGradient id="g2" cx="60%" cy="30%"><stop offset="0%" stop-color="#d4a853" stop-opacity="0.8"/><stop offset="100%" stop-color="#c4637a" stop-opacity="0.1"/></radialGradient>
+      </defs>
+      <circle cx="150" cy="150" r="120" fill="url(#g1)" opacity="0.15"/>
+      <circle cx="150" cy="150" r="90" fill="none" stroke="url(#g2)" stroke-width="1" stroke-dasharray="8 4" opacity="0.6"><animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="20s" repeatCount="indefinite"/></circle>
+      <circle cx="150" cy="150" r="60" fill="none" stroke="#e8a0b0" stroke-width="0.5" opacity="0.4"><animateTransform attributeName="transform" type="rotate" from="360 150 150" to="0 150 150" dur="15s" repeatCount="indefinite"/></circle>
+      <polygon points="150,60 220,120 200,200 100,200 80,120" fill="none" stroke="#d4a853" stroke-width="1" opacity="0.3"><animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="30s" repeatCount="indefinite"/></polygon>
+      <circle cx="150" cy="150" r="20" fill="url(#g2)" opacity="0.7"/>
+      <circle cx="150" cy="60" r="5" fill="#d4a853" opacity="0.8"><animateTransform attributeName="transform" type="rotate" from="0 150 150" to="360 150 150" dur="8s" repeatCount="indefinite"/></circle>
+      <circle cx="240" cy="150" r="4" fill="#e8a0b0" opacity="0.8"><animateTransform attributeName="transform" type="rotate" from="0 150 150" to="-360 150 150" dur="12s" repeatCount="indefinite"/></circle>
+      <text x="150" y="158" text-anchor="middle" font-family="Cormorant Garamond" font-size="14" fill="#d4a853" opacity="0.8" letter-spacing="3">GLAMOUR</text>
+    </svg>
+  </div>
+  <div class="hero-scroll">
+    <span class="scroll-text">Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <span class="marquee-item">Hair Styling</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Skin Treatments</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Bridal Packages</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Hair Coloring</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Nail Art</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Wellness Spa</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Luxury Facials</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Hair Spa</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Hair Styling</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Skin Treatments</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Bridal Packages</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Hair Coloring</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Nail Art</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Wellness Spa</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Luxury Facials</span><span class="marquee-dot">✦</span>
+    <span class="marquee-item">Hair Spa</span><span class="marquee-dot">✦</span>
+  </div>
+</div>
+
+<!-- ABOUT ← IMAGE FIXED HERE -->
+<section id="about">
+  <div class="about-visual reveal">
+    <div class="about-card card-main tilt-card">
+      <div class="card-main-img">
+        <img
+          src="https://images.pexels.com/photos/3993449/pexels-photo-3993449.jpeg?auto=compress&cs=tinysrgb&w=800"
+          alt="Glamour Studio — Luxury Salon Interior"
+        />
+      </div>
+    </div>
+    <div class="about-card card-stat tilt-card">
+      <div class="stat-number" data-count="500">0</div>
+      <div class="stat-label">Happy Clients</div>
+    </div>
+  </div>
+  <div class="about-content reveal">
+    <p class="section-label">Our Story</p>
+    <h2 class="section-title">Crafting Beauty<br>with <em>Intention</em></h2>
+    <p>Founded in the heart of Kolkata, Glamour Studio is a sanctuary for those who believe beauty is an art form. We blend modern technique with timeless elegance to create looks that are uniquely yours.</p>
+    <p>Our team of expert stylists brings years of international training and a passion for innovation to every appointment. From the moment you walk in, you're not just a client — you're the muse.</p>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num" data-count="500">0+</div><div class="lbl">Clients Served</div></div>
+      <div class="stat-item"><div class="num" data-count="12">0</div><div class="lbl">Expert Stylists</div></div>
+      <div class="stat-item"><div class="num" data-count="6">0</div><div class="lbl">Years Experience</div></div>
+      <div class="stat-item"><div class="num" data-count="98">0</div><div class="lbl">% Satisfaction</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-header reveal">
+    <p class="section-label">What We Offer</p>
+    <h2 class="section-title">Our <em>Services</em></h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">01</div>
+      <h3 class="service-name">Haircut & Styling</h3>
+      <p class="service-desc">Precision cuts tailored to your face shape and lifestyle. From classic bobs to avant-garde cuts, we make every strand count.</p>
+      <div class="service-footer"><span class="service-price">₹499</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">02</div>
+      <h3 class="service-name">Hair Coloring</h3>
+      <p class="service-desc">From balayage to bold fashion colors — our colorists craft bespoke palettes that make you unforgettable.</p>
+      <div class="service-footer"><span class="service-price">₹1,499</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">03</div>
+      <h3 class="service-name">Facial Treatment</h3>
+      <p class="service-desc">Luxury facials using premium skincare lines. Deep cleansing, hydration, and glow treatments for every skin type.</p>
+      <div class="service-footer"><span class="service-price">₹999</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">04</div>
+      <h3 class="service-name">Manicure & Pedicure</h3>
+      <p class="service-desc">Indulge in our signature nail treatments. Gel, acrylic, nail art — your hands deserve the spotlight too.</p>
+      <div class="service-footer"><span class="service-price">₹799</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">05</div>
+      <h3 class="service-name">Bridal Makeup</h3>
+      <p class="service-desc">Your dream bridal look, crafted with precision. Trial sessions available. Airbrush, HD, and traditional styles.</p>
+      <div class="service-footer"><span class="service-price">₹4,999</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+    <div class="service-card tilt-card reveal">
+      <div class="service-number">06</div>
+      <h3 class="service-name">Hair Spa</h3>
+      <p class="service-desc">Deep conditioning, keratin treatments, and scalp therapy to restore your hair's natural vitality and shine.</p>
+      <div class="service-footer"><span class="service-price">₹899</span><button class="service-btn" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book Now</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="testimonials-header reveal">
+    <p class="section-label">Client Love</p>
+    <h2 class="section-title">What They <em>Say</em></h2>
+  </div>
+  <div class="testimonials-track-wrap">
+    <div class="testimonials-track">
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The bridal makeup they did for my wedding was absolutely breathtaking. Every guest asked who did my look. I felt like royalty walking down the aisle.</p><div class="testimonial-author"><div class="author-avatar">P</div><div><div class="author-name">Priya Sharma</div><div class="author-role">Bride, Kolkata</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">My balayage turned out better than the Pinterest reference I brought. The colorist truly understood what I wanted and elevated it beyond my expectations.</p><div class="testimonial-author"><div class="author-avatar">R</div><div><div class="author-name">Riya Dutta</div><div class="author-role">Regular Client</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The facial treatment left my skin glowing for weeks. The ambience is so luxurious — feels like a five-star spa experience in the heart of the city.</p><div class="testimonial-author"><div class="author-avatar">S</div><div><div class="author-name">Sneha Bose</div><div class="author-role">Skincare Enthusiast</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The nail art they created for my anniversary dinner was stunning. Intricate, precise, and exactly what I envisioned. Will absolutely keep coming back!</p><div class="testimonial-author"><div class="author-avatar">A</div><div><div class="author-name">Ankita Roy</div><div class="author-role">Nail Art Lover</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">Best haircut of my life. The stylist took time to understand my face shape and lifestyle before touching my hair. The result was transformative.</p><div class="testimonial-author"><div class="author-avatar">M</div><div><div class="author-name">Monika Sen</div><div class="author-role">Working Professional</div></div></div></div>
+      <!-- Duplicates for loop -->
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The bridal makeup they did for my wedding was absolutely breathtaking. Every guest asked who did my look. I felt like royalty walking down the aisle.</p><div class="testimonial-author"><div class="author-avatar">P</div><div><div class="author-name">Priya Sharma</div><div class="author-role">Bride, Kolkata</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">My balayage turned out better than the Pinterest reference I brought. The colorist truly understood what I wanted and elevated it beyond my expectations.</p><div class="testimonial-author"><div class="author-avatar">R</div><div><div class="author-name">Riya Dutta</div><div class="author-role">Regular Client</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The facial treatment left my skin glowing for weeks. The ambience is so luxurious — feels like a five-star spa experience in the heart of the city.</p><div class="testimonial-author"><div class="author-avatar">S</div><div><div class="author-name">Sneha Bose</div><div class="author-role">Skincare Enthusiast</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">The nail art they created for my anniversary dinner was stunning. Intricate, precise, and exactly what I envisioned. Will absolutely keep coming back!</p><div class="testimonial-author"><div class="author-avatar">A</div><div><div class="author-name">Ankita Roy</div><div class="author-role">Nail Art Lover</div></div></div></div>
+      <div class="testimonial-card"><div class="stars">★★★★★</div><div class="testimonial-quote">"</div><p class="testimonial-text">Best haircut of my life. The stylist took time to understand my face shape and lifestyle before touching my hair. The result was transformative.</p><div class="testimonial-author"><div class="author-avatar">M</div><div><div class="author-name">Monika Sen</div><div class="author-role">Working Professional</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section id="booking">
+  <div class="booking-container">
+    <div class="booking-info reveal">
+      <p class="section-label">Get In Touch</p>
+      <h2 class="section-title">Book Your<br><em>Experience</em></h2>
+      <p>Ready to transform your look? Fill out the form and our team will confirm your appointment within 2 hours. Walk-ins welcome, but advance booking is recommended.</p>
+      <div class="contact-details">
+        <div class="contact-item"><div class="contact-icon">📍</div><div><div class="contact-label">Location</div><div class="contact-value">42 MG Road, Park Street Area<br>Kolkata, West Bengal 700016</div></div></div>
+        <div class="contact-item"><div class="contact-icon">📞</div><div><div class="contact-label">Phone</div><div class="contact-value">+91 98765 43210</div></div></div>
+        <div class="contact-item"><div class="contact-icon">✉️</div><div><div class="contact-label">Email</div><div class="contact-value">hello@glamourstudio.in</div></div></div>
+        <div class="contact-item"><div class="contact-icon">🕐</div><div><div class="contact-label">Hours</div><div class="contact-value">Monday – Saturday: 9:00 AM – 8:00 PM<br>Sunday: 10:00 AM – 6:00 PM</div></div></div>
+      </div>
+    </div>
+    <div class="booking-form reveal">
+      <h3 class="form-title">Reserve Your Appointment</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" placeholder="Ankita Laha"></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+91 98765 43210"></div>
+      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" placeholder="hello@example.com"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Service</label>
+          <select>
+            <option value="">Choose a service...</option>
+            <option>Haircut & Styling — ₹499</option>
+            <option>Hair Coloring — ₹1,499</option>
+            <option>Facial Treatment — ₹999</option>
+            <option>Manicure & Pedicure — ₹799</option>
+            <option>Bridal Makeup — ₹4,999</option>
+            <option>Hair Spa — ₹899</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Preferred Date</label><input type="date"></div>
+      </div>
+      <div class="form-group"><label>Message (Optional)</label><textarea placeholder="Any special requests or notes for our team..."></textarea></div>
+      <button class="submit-btn" onclick="handleSubmit()"><span>Confirm Appointment ✦</span></button>
+      <div class="success-msg" id="success-msg">✦ Your appointment request has been received! We'll confirm within 2 hours. ✦</div>
+    </div>
+  </div>
+</section>
+
+<!-- DESIGN RATIONALE
+<section id="rationale">
+  <div class="reveal" style="text-align:center">
+    <p class="section-label">Design Rationale</p>
+    <h2 class="section-title">UX & Conversion <em>Decisions</em></h2>
+  </div>
+  <div class="rationale-grid">
+    <div class="rationale-item reveal"><h4>Color Psychology</h4><p>Deep rose and gold evoke luxury, femininity, and trust — precisely the emotions a premium salon must trigger. The dark background elevates the brand and makes CTAs pop with high contrast.</p></div>
+    <div class="rationale-item reveal"><h4>Conversion Flow</h4><p>Every section funnels toward the booking form. Hero CTA, service "Book Now" buttons, and the navbar all link directly to the appointment section, reducing friction in the user journey.</p></div>
+    <div class="rationale-item reveal"><h4>Trust Architecture</h4><p>Stats, star-rated testimonials, and a detailed contact section build credibility. The moving testimonials create social proof without requiring the user to actively scroll through them.</p></div>
+    <div class="rationale-item reveal"><h4>Motion & Depth</h4><p>Particle systems, floating orbs, tilt effects, and scroll-reveal animations create an immersive premium feel that distinguishes this from flat competitors and increases dwell time.</p></div>
+  </div>
+</section> -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Glamour <span>Studio</span></div>
+  <div class="footer-copy">© 2026 Glamour Studio. All rights reserved. · Crafted with ✦ in Kolkata</div>
+  <div class="footer-social">
+    <a href="#" class="social-link">in</a>
+    <a href="#" class="social-link">ig</a>
+    <a href="#" class="social-link">fb</a>
+  </div>
+</footer>
+
+<script>
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursor-follower');
+let mx = 0, my = 0, fx = 0, fy = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx - 6 + 'px'; cursor.style.top = my - 6 + 'px'; });
+function animateFollower() { fx += (mx - fx) * 0.12; fy += (my - fy) * 0.12; follower.style.left = fx - 20 + 'px'; follower.style.top = fy - 20 + 'px'; requestAnimationFrame(animateFollower); }
+animateFollower();
+document.querySelectorAll('button, a, .service-card, .testimonial-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2)'; follower.style.transform = 'scale(1.5)'; follower.style.borderColor = 'var(--gold)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; follower.style.transform = 'scale(1)'; follower.style.borderColor = 'var(--rose)'; });
+});
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+const particles = [];
+for (let i = 0; i < 80; i++) { particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.3, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, color: Math.random() > 0.5 ? '#e8a0b0' : '#d4a853', opacity: Math.random() * 0.5 + 0.2 }); }
+function drawParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.globalAlpha = p.opacity; ctx.fill(); p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > canvas.width) p.vx *= -1; if (p.y < 0 || p.y > canvas.height) p.vy *= -1; }); ctx.globalAlpha = 1; requestAnimationFrame(drawParticles); }
+drawParticles();
+window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50); });
+const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function animateCount(el) { const target = parseInt(el.dataset.count); let current = 0; const step = target / 60; const timer = setInterval(() => { current += step; if (current >= target) { current = target; clearInterval(timer); } el.textContent = Math.floor(current) + (el.closest('.stat-item') ? '+' : ''); }, 20); }
+const countObserver = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.querySelectorAll('[data-count]').forEach(animateCount); countObserver.unobserve(e.target); } }); });
+document.querySelectorAll('#about').forEach(el => countObserver.observe(el));
+document.querySelectorAll('.tilt-card').forEach(card => {
+  card.addEventListener('mousemove', e => { const rect = card.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width - 0.5; const y = (e.clientY - rect.top) / rect.height - 0.5; card.style.transform = `perspective(600px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) translateZ(10px)`; });
+  card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(600px) rotateY(0) rotateX(0) translateZ(0)'; });
+});
+function handleSubmit() {
+  const inputs = document.querySelectorAll('.booking-form input, .booking-form select');
+  let valid = true;
+  inputs.forEach(i => { if (!i.value) valid = false; });
+  if (!valid) { inputs.forEach(i => { if (!i.value) i.style.borderBottomColor = 'var(--rose)'; }); return; }
+  const btn = document.querySelector('.submit-btn');
+  btn.innerHTML = '<span>Processing... ✦</span>';
+  setTimeout(() => { btn.innerHTML = '<span>Appointment Confirmed! ✦</span>'; btn.style.background = 'linear-gradient(135deg, #2a7a4a, #3a9a5a)'; document.getElementById('success-msg').style.display = 'block'; }, 1500);
+}
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  document.querySelector('.hero-content').style.transform = `translateY(${y * 0.3}px)`;
+  document.querySelector('.hero-3d-scene').style.transform = `translateY(${y * 0.15}px)`;
+});
+</script>
+</body>
+</html>
