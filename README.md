@@ -2,65 +2,59 @@
 A fully responsive luxury salon landing page developed using only HTML  as part of the Future Interns internship program.
 There is only one file: HTML.
 
-Even though it uses CSS and JavaScript, everything is embedded inside the same HTML file:
+FUTURE_UX_01
 
-<style> → contains all CSS
+A fully responsive luxury salon landing page developed as part of the Future Interns Internship Program.
 
-<script> → contains all JavaScript
+This project is a single-page static website built using pure HTML, with embedded CSS and JavaScript. The entire application exists in a single file, with no external dependencies or frameworks.
 
-No external CSS file
+Project Overview
 
-No external JS file
+Type: Static Single-Page Website
 
-No frameworks
+Domain: Luxury Salon / Glamour Studio
 
-So technically this is a:
+Files: One (index.html)
 
-Single-page static HTML website with inline CSS & JavaScript
+Frameworks: None
 
-Here’s a corrected and simplified README reflecting that:
+Backend: None
 
-💎 Glamour Studio — Luxury Salon Website
+All styling and scripting are written inline using <style> and <script> tags within the HTML file.
 
-A fully self-contained, single-file luxury salon website built using pure HTML with embedded CSS and JavaScript.
-
-📦 Project Structure
+Project Structure
 glamour-studio/
-│
-└── index.html   # Entire website (HTML + CSS + JS in one file)
+└── index.html   // Complete website (HTML + CSS + JavaScript)
 
-There are no additional files required.
+No additional files are required to run the project.
 
-🛠 Technologies Used
+Technologies Used
 
 HTML5
 
-Embedded CSS3
+CSS3 (embedded)
 
-Embedded Vanilla JavaScript
+Vanilla JavaScript (embedded)
 
 Google Fonts (via CDN)
 
-Pexels image (via URL)
+Pexels images (via external URLs)
 
-No frameworks.
-No libraries.
-No build tools.
-No backend.
+There are no frameworks, libraries, build tools, or backend services used.
 
-🚀 How to Run
+How to Run
 
-Save the file as:
+Clone or download the repository
 
-index.html
+Open the index.html file
 
-Double-click to open in any browser.
+Double-click to launch it in any modern web browser
 
-That’s it.
+No installation or configuration is required.
 
-🌐 Deployment
+Deployment
 
-Because it’s a single static file, you can deploy it on:
+Because this is a static, single-file project, it can be deployed easily on:
 
 GitHub Pages
 
@@ -68,44 +62,44 @@ Netlify
 
 Vercel
 
-Any shared hosting
+Shared hosting or cPanel
 
-Even upload directly to cPanel
+No server setup is needed.
 
-No server setup required.
+Important Note
 
-🎯 Important Note
+The booking form is frontend-only. It:
 
-The booking form is frontend-only.
+Validates user input
 
-It:
+Displays a processing animation
 
-Validates inputs
+Shows a success message
 
-Shows processing animation
-
-Displays success message
-
-But it does NOT:
+It does not:
 
 Send emails
 
-Store data
+Store user data
 
 Connect to a database
 
-You would need backend integration for that.
+A backend service would be required to enable these features.
 
-If you want, I can now:
+Future Enhancements
 
-Convert it into a proper multi-file structure (HTML + CSS + JS separated)
+Convert to a multi-file structure (separate HTML, CSS, and JavaScript)
 
-Add backend integration
+Add backend integration for booking functionality
 
 Optimize performance
 
-Make it production-ready
-
-Add SEO meta setup
+Add SEO meta tags
 
 Improve accessibility
+
+Prepare for production deployment
+
+Author
+
+Developed as part of the Future Interns Internship Program
